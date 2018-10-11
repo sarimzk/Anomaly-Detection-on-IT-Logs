@@ -4,6 +4,9 @@ require(dplyr)
 require(ggplot2)
 require(tm)
 require(proxy)
+require(tidytext)
+require(ggplot2)
+
 
 # Loading the csv log files
 
@@ -76,6 +79,13 @@ SimilarityCosine <- function(x, y) {
 
 
 log_to_analyze <- c(
+  'mpd.csv',
+  'smartd.csv',
+  'mpdman.csv',
+  'python.csv',
+  'sdpd.csv',
+  'rpc.statd.csv',
+  'hcid.csv',
   'sftp-server.csv',
   'run_srp_daemon.csv',
   'shutdown.csv',
@@ -91,11 +101,22 @@ log_to_analyze <- c(
   'wall.csv',
   'bfs_parallel.csv')
 
-pr_DB$set_entry( FUN = SimilarityCosine, names = c("Cosine") )
+pr_DB$set_entry(FUN = "R_cosine",
+                names = c("cosine", "angular"),
+                PREFUN = "pr_cos_prefun",
+                distance = FALSE,
+                convert = "pr_simil2dist",
+                type = "metric",
+                loop = FALSE,
+                C_FUN = TRUE,
+                abcd = FALSE,
+                formula = "xy / sqrt(xx * yy)",
+                reference = "Anderberg, M.R. (1973). Cluster Analysis for Applicaitons. Academic Press.",
+                description = "The cos Similarity (C implementation)")
+
 
 for(i in 1:length(log_to_analyze)) {
-  
-  file_log <- 'run_srp_daemon.csv' #log_to_analyze[[i]]
+  file_log <- log_to_analyze[[i]]
   loggroup_file <- paste('../data/group/',file_log,sep="")
   print(paste('Reading ',file_log,' and calculating TF-IDF'))
   loggroup_data <- data.table::fread(loggroup_file,sep=",",verbose=FALSE,header=TRUE, na.strings=c('','NA','N/A'))
@@ -106,12 +127,41 @@ for(i in 1:length(log_to_analyze)) {
   news_tf_idf <- calculate_tfidf(loggroup_data$LogText)
   d1 <- dist(news_tf_idf, method = "Cosine")  
   cluster1 <- hclust(d1, method = "ward.D")
-  png(paste0('../data/analyze/',file_log,'.png'), width = 750, height = 750)
+  png(paste0('../data/analyze/',file_log,'.png'), width = 1500, height = 1500)
   plot(cluster1,main=paste('Dendogram for:',file_log))
   dev.off()
-  
 }
 
 pr_DB$delete_entry("Cosine")
 #After splitting we found some interesting details
 #rect.hclust(cluster1, 2)
+
+# Zipf law
+log_file <- paste('../data/group/','dhcpd.csv',sep="")
+log_file_data <- data.table::fread(log_file,sep=",",verbose=FALSE,header=TRUE, na.strings=c('','NA','N/A'))
+daemon_words <- log_file_data %>% unnest_tokens(word,LogText) %>% count(Daemon,word,sort=TRUE) %>% ungroup()
+
+total_words <- daemon_words %>% group_by(Daemon) %>% summarise(total=sum(n))
+daemon_words <- left_join(daemon_words, total_words)
+log(daemon_words$n/daemon_words$total)
+
+# ggplot(daemon_words, aes(n/total, fill = Daemon)) +
+#   geom_histogram(show.legend = FALSE) +
+#   xlim(NA, 0.06) +
+#   facet_wrap(~Daemon, ncol = 2, scales = "free_y") 
+
+freq_by_rank <- daemon_words %>% 
+  group_by(Daemon) %>% 
+  mutate(rank = row_number(), 
+         `term frequency` = n/total)
+
+freq_by_rank %>% 
+  ggplot(aes(rank, `term frequency`, color = Daemon)) + 
+  geom_line(size = 1.1, alpha = 0.8, show.legend = FALSE) + 
+  scale_x_log10() +
+  scale_y_log10() + ggtitle(paste('Zipf Law on log file',log_file))
+  
+
+log_file_data
+tail(freq_by_rank,500)
+
