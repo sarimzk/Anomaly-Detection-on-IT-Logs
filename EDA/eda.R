@@ -58,13 +58,6 @@ create_splitted_daemon_data <- function(log_data) {
 # print_daemon_freq(log_data)
 # create_splitted_daemon_data(log_data)
 
-
-#After splitting we found some interesting details
-logmcelog_file <- '../data/group/mcelog.csv'
-logmcelog_data <- data.table::fread(logmcelog_file,sep=",",verbose=TRUE,header=FALSE, na.strings=c('','NA','N/A'))
-
-
-
 calculate_tfidf <- function(corpus) {
   doc_corpus <- Corpus( VectorSource(corpus) )
   control_list <- list(removePunctuation = FALSE, stopwords = TRUE, tolower = TRUE)
@@ -81,14 +74,44 @@ SimilarityCosine <- function(x, y) {
   return( acos(similarity) * 180 / pi )
 }
 
-logmcelog_data$V5[2:nrow(logmcelog_data)]
-news_tf_idf <- calculate_tfidf(logmcelog_data$V5[2:nrow(logmcelog_data)])
 
+log_to_analyze <- c(
+  'sftp-server.csv',
+  'run_srp_daemon.csv',
+  'shutdown.csv',
+  'logger.csv',
+  'init.csv',
+  'dkms_autoinstaller.csv',
+  'mount.csv',
+  'mcelog.csv',
+  'S99SMmonitor.csv',
+  'SMagent.csv',
+  'OpenSM.csv',
+  'yum.csv',
+  'wall.csv',
+  'bfs_parallel.csv')
 
 pr_DB$set_entry( FUN = SimilarityCosine, names = c("Cosine") )
-d1 <- dist(news_tf_idf, method = "Cosine")
-pr_DB$delete_entry("Cosine")
 
-cluster1 <- hclust(d1, method = "ward.D")
-plot(cluster1)
-rect.hclust(cluster1, 2)
+for(i in 1:length(log_to_analyze)) {
+  
+  file_log <- 'run_srp_daemon.csv' #log_to_analyze[[i]]
+  loggroup_file <- paste('../data/group/',file_log,sep="")
+  print(paste('Reading ',file_log,' and calculating TF-IDF'))
+  loggroup_data <- data.table::fread(loggroup_file,sep=",",verbose=FALSE,header=TRUE, na.strings=c('','NA','N/A'))
+  
+  if(nrow(loggroup_data)<=2){
+    next
+  }
+  news_tf_idf <- calculate_tfidf(loggroup_data$LogText)
+  d1 <- dist(news_tf_idf, method = "Cosine")  
+  cluster1 <- hclust(d1, method = "ward.D")
+  png(paste0('../data/analyze/',file_log,'.png'), width = 750, height = 750)
+  plot(cluster1,main=paste('Dendogram for:',file_log))
+  dev.off()
+  
+}
+
+pr_DB$delete_entry("Cosine")
+#After splitting we found some interesting details
+#rect.hclust(cluster1, 2)
