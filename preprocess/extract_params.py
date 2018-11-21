@@ -12,11 +12,14 @@ def diff(l1, l2):
 def extract_params(time, message, template):
     params = [time]
 
-    if message is not None:
+    try:
+        if message is not None:
 
-        seq = [x for x in re.split(r'[\s=:,]', message) if x != '']
-        seq2 = [x for x in re.split(r'[\s=:,]', template) if x != '']
-        params.extend(diff(seq,seq2))
+            seq = [x for x in re.split(r'[\s=:,]', message) if x != '']
+            seq2 = [x for x in re.split(r'[\s=:,]', template) if x != '']
+            params.extend(diff(seq,seq2))
+    except:
+        return params
 
     return params
 
@@ -38,4 +41,3 @@ if __name__=='__main__':
         structured_data['Params'] = structured_data.apply(lambda ix: extract_params(ix.Time,ix.Content,ix.EventTemplate), axis=1)
         print('Params extracted')
         structured_data.to_csv('{}-parametarized.csv'.format(spell_file_path))
-        
