@@ -3,10 +3,12 @@ import sys
 import numpy as np
 sys.path.append('../')
 
-input_dir  = '/Users/necronet/Documents/repos/cse741/data'
-log_format = '<Time> <Machine> <Daemon> <Content>'
-log_file   = 'logfilemarch-10K.csv'
-taus = np.arange(0.1,0.9,0.2)
+input_dir  = '/Users/necronet/Documents/repos/cse741/data/'
+log_format = '<Time>,<Machine>,<Daemon>,<Content>'
+log_file   = 'logfilemarch-1M-normalized.csv'
+
+# taus = np.arange(0.1,0.9,0.2)
+taus = [0.6]
 
 for tau in taus:
     tau = np.around(tau,2)

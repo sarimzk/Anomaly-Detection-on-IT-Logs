@@ -120,6 +120,7 @@ class LogParser:
             if len(set_seq & set_template) < 0.5 * size_seq:
                 continue
             lcs = self.LCS(seq, logClust.logTemplate)
+
             if len(lcs) > maxLen or (len(lcs) == maxLen and len(logClust.logTemplate) < len(maxClust.logTemplate)):
                 maxLen = len(lcs)
                 maxlcs = lcs
@@ -262,6 +263,7 @@ class LogParser:
                             self.removeSeqFromPrefixTree(rootNode, matchCluster)
                             matchCluster.logTemplate = newTemplate
                             self.addSeqToPrefixTree(rootNode, matchCluster)
+
             if matchCluster:
                 matchCluster.logIDL.append(logID)
             count += 1
