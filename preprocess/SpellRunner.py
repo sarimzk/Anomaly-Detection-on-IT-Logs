@@ -3,9 +3,14 @@ import sys
 import numpy as np
 sys.path.append('../')
 
-input_dir  = '/Users/necronet/Documents/repos/cse741/data/'
-log_format = '<Time>,<Machine>,<Daemon>,<Content>'
-log_file   = 'logfilemarch-1M-normalized.csv'
+#input_dir  = '/Users/necronet/Documents/repos/cse741/data/'
+#log_format = '<Time>,<Machine>,<Daemon>,<Content>'
+#log_file   = 'logfilemarch-1M-normalized.csv'
+
+
+input_dir  = '/home/mproject/data/'
+log_format = '<LineNumber>,<Time>,<Machine>,<Daemon>,<Content>'
+log_file   = 'logfileSorted10M-normalized.csv'
 
 # taus = np.arange(0.1,0.9,0.2)
 taus = [0.6]

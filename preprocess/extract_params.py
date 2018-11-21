@@ -11,9 +11,12 @@ def diff(l1, l2):
 
 def extract_params(time, message, template):
     params = [time]
-    seq = [x for x in re.split(r'[\s=:,]', message) if x != '']
-    seq2 = [x for x in re.split(r'[\s=:,]', template) if x != '']
-    params.extend(diff(seq,seq2))
+
+    if message is not None:
+
+        seq = [x for x in re.split(r'[\s=:,]', message) if x != '']
+        seq2 = [x for x in re.split(r'[\s=:,]', template) if x != '']
+        params.extend(diff(seq,seq2))
 
     return params
 
