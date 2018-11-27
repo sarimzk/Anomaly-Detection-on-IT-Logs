@@ -4,18 +4,12 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import time
-import datetime as dt
-from matplotlib import style
-from sklearn import svm, metrics
-from sklearn.svm import SVC
-from sklearn.model_selection import GridSearchCV
 import datetime
 import dateutil.parser
 from datetime import datetime
 from dateutil.parser import parse
 import datetime
 import dateutil.parser
-import re
 import time
 #re.compile('<title>(.*)</title>')
 #%matplotlib inline
@@ -27,23 +21,17 @@ os.chdir(path)
 print("pathset")
 #Create DATAFRAME
 start1 = time.time()
-df1=pd.read_csv('logfilemarch.csv', na_filter=False)
+df1=pd.read_csv('50kmarch.csv', na_filter=False)
 end1= time.time()
 print("Took %f ms in reading complete logfile" % ((end1 - start1) * 1000.0))
-
 df2= df1.iloc[0:10000000]
 df2.columns=["Time", "Machine", "Daemon", "Log_Message"]
-
 print("readfile 5 m logs")
 #df2=df1
 #Create Smaller Datasets
 dft=df2
 dft2=df2
 print("Smaller datasets created")
-#Set Columns
-#dft.columns=["Time", "Machine", "Daemon", "Log_Message"]
-#dft2.columns=["Time", "Machine", "Daemon", "Log_Message"]
-
 #SORTING USING METHOD1
 start2 = time.time()
 dft[['date', 'time']] = dft2.Time.str.split(' ', expand = True)
@@ -52,8 +40,6 @@ dft.to_csv('logfileSorted2extraColumns.csv')
 print("CSV File dft.csv created")
 end2= time.time()
 print("Took %f ms in creating csv method1" % ((end2 - start2) * 1000.0))
-
-
 #SORTING using method2
 start3 = time.time()
 dft3 = dft2.sort_values(by='Time',ascending=True)
